@@ -1,4 +1,5 @@
 from glow import *
+from __random import choice
 TAM = (-1, 0, 1)
 SP = 9
 SZ = 3
@@ -11,7 +12,12 @@ TIRAS = [[(x*SP, y*SP, z*SP) for x in TAM] for y in TAM for z in TAM]+[
         [(x*SP, y*SP, z*SP) for y in TAM] for x in TAM for z in TAM]+[
         [(x*SP, y*SP, z*SP) for z in TAM] for x in TAM for y in TAM]+[
         [(-9,9,z),(0,0,z),(9,-9,z)] for z in [-9,0,9]]+[
-        [(9,9,z),(0,0,z),(-9,-9,z)] for z in [-9,0,9]]
+        [(9,9,z),(0,0,z),(-9,-9,z)] for z in [-9,0,9]]+[
+        [(x,-9,9),(x,0,0),(x,9,-9)] for x in [-9,0,9]]+[
+        [(x,9,9),(x,0,0),(x,-9,-9)] for x in [-9,0,9]]+[
+        [(-9,y,9),(0,y,0),(9,y,-9)] for y in [-9,0,9]]+[
+        [(9,y,9),(0,y,0),(-9,y,-9)] for y in [-9,0,9]]
+
 
 pecas = [box, sphere] * 14
 cores = [color.red, color.blue] * 14
@@ -43,7 +49,7 @@ class Casa:
         peca = Peca(pecas.pop(), coluna, linha, camada, cores.pop())  # cria uma peça aqui
         #Casa.CASAS.pop(self.pos)  # remove esta da lista de casas para não ser clicada
         self.recebe(peca)  # avisa a casa que ela esta é a peça que está nela
-        print(self.pos)
+        #print(self.pos)
 
     def pinta_vencedores(self, vencedores):
         SP = SZ+1
@@ -67,8 +73,32 @@ class Peca:
         self.e_peca = tipo_peca(pos=(x, y, z), color=cor,  size=(SZ, SZ, SZ), opacity=0.6)
         self.tipo = 1 if tipo_peca == box else 2
 
-
 def main():
+    def verifica_humano_ganha():
+        def casas_ganhadoras(tira):
+            tipo_tira = [Casa.CASAS[casa].tipo_peca() for casa in tira if isinstance(casa, tuple)]
+            return tipo_tira == [1, 1, 0] or tipo_tira == [0, 0, 1] or tipo_tira == [1, 0, 1]
+        tiras = [tira for tira in TIRAS if casas_ganhadoras(tira)]  # crie aqui um teste para saber se alguem venceu
+        #print("testa_ganhou", tiras,  casas_ganhadoras(tiras))
+        return tiras
+
+    def verifica_robo_ganha():
+        pass
+    def jogada():
+        casa_da_jogada = choice(TABULEIRO) #TABULEIRO[0]
+        humano_ganha = verifica_humano_ganha()
+        if humano_ganha:
+            casas = humano_ganha[0]
+            print ('humano_ganha:', humano_ganha, casas, "Jogue aqui:", casas[2])
+            #descobre qual casa está vazia
+            casa_vazia = [Casa.CASAS[casa] for casa in casas if Casa.CASAS[casa].tipo_peca() ==0]
+            print ('humano_ganha:', humano_ganha, casas, "Jogue aqui:", casa_vazia)
+
+            casa_da_jogada = casa_vazia[0]
+
+        #verifica_robo_ganha()
+        TABULEIRO.remove(casa_da_jogada)
+        casa_da_jogada.clicou()
 
     def clicou(event):
         cc = cena.mouse.pick().pos  # pega a posição do objeto clicado pelo mouse
@@ -78,6 +108,7 @@ def main():
             if casa_clicada in TABULEIRO:
                 TABULEIRO.remove(casa_clicada)
                 casa_clicada.clicou()  # chama o clicou da casa escolhida
+        jogada()
     _gs = glow('main')
     cena = canvas()
     cena.width = 400
@@ -86,6 +117,7 @@ def main():
 
     TABULEIRO = [Casa(coluna, linha, camada)
                  for coluna in TAM for linha in TAM for camada in TAM]
+    jogada()
     return TABULEIRO
 
 if __name__ == "__main__":
