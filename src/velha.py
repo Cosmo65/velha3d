@@ -83,7 +83,12 @@ def main():
         return tiras
 
     def verifica_robo_ganha():
-        pass
+        def casas_ganhadoras(tira):
+            tipo_tira = [Casa.CASAS[casa].tipo_peca() for casa in tira if isinstance(casa, tuple)]
+            return tipo_tira == [1, 1, 0] or tipo_tira == [0, 0, 1] or tipo_tira == [1, 0, 1]
+        tiras = [tira for tira in TIRAS if casas_ganhadoras(tira)]  # crie aqui um teste para saber se alguem venceu
+        #print("testa_ganhou", tiras,  casas_ganhadoras(tiras))
+        return tiras
     def jogada():
         casa_da_jogada = choice(TABULEIRO) #TABULEIRO[0]
         humano_ganha = verifica_humano_ganha()
